@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <!-- This project is packed into the WpfMcp package as an analyzer, never on its own. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IsPackable>false</IsPackable>
+    <Configurations>Debug;Release;Testing</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Declares the MCPxxx rules to the analyzer release-tracking analyzer (RS2008). -->
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+  <!-- PrivateAssets=all keeps Roslyn out of the consuming project's dependency graph; without
+       it every consumer of WpfMcp would pull in Microsoft.CodeAnalysis. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- No reference to the attributes assembly on purpose: the generator matches attributes by
+       fully-qualified name string, so it has no compile-time or runtime dependency on them. -->
+
+</Project>

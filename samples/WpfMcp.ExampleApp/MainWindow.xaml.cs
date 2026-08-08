@@ -3,8 +3,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Windows;
+using WpfMcp.Core;
 using WpfMcp.Core.Server;
-using WpfMcp.Generators.SharedLibrary;
 
 namespace WpfMcp.ExampleApp
 {

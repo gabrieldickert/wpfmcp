@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Ship XML docs for IntelliSense, without requiring a comment on every public member. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- NuGet package metadata. This project is the whole package: it carries the runtime
+       library, the attributes, and (see below) the source generator. -->
+  <PropertyGroup>
+    <PackageId>WpfMcp</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Gabriel Dickert</Authors>
+    <Description>
+      Turn a WPF application into an MCP server. Mark a class [McpToolCollection] and its methods
+      [McpTool], and a source generator exposes them as Model Context Protocol tools over HTTP —
+      including tools bound to live windows, async tools, progress reporting and cancellation.
+    </Description>
+    <PackageTags>mcp;model-context-protocol;wpf;source-generator;ai;llm</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/gabrieldickert/WpfMcp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/gabrieldickert/WpfMcp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- Referenced as an analyzer so tools in this project would be generated too, and so the
+       generator is built before we pack it. ReferenceOutputAssembly=false keeps the generator
+       out of the runtime closure. -->
+  <ItemGroup>
+    <ProjectReference Include="..\WpfMcp.Generators\WpfMcp.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Ship the generator inside this package under analyzers/dotnet/cs, which is where the
+       SDK looks for source generators. It must NOT go into lib/. -->
+  <Target Name="PackGenerator" BeforeTargets="_GetPackageFiles">
+    <MSBuild Projects="..\WpfMcp.Generators\WpfMcp.Generators.csproj"
+             Targets="Build"
+             Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="GeneratorAssembly" />
+    </MSBuild>
+
+    <ItemGroup>
+      <None Include="@(GeneratorAssembly)"
+            Pack="true"
+            PackagePath="analyzers/dotnet/cs"
+            Visible="false" />
+    </ItemGroup>
+  </Target>
+
+</Project>

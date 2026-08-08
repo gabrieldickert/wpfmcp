@@ -11,10 +11,11 @@
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)GeneratedFiles</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
+  <!-- Mirrors what the NuGet package gives a consumer: the runtime library plus the generator
+       as an analyzer. A package consumer gets both from a single PackageReference. -->
   <ItemGroup>
-    <ProjectReference Include="..\WpfMcp.Core\WpfMcp.Core.csproj" />
-    <ProjectReference Include="..\WpfMcp.Generators.SharedLibrary\WpfMcp.Generators.SharedLibrary.csproj" />
-    <ProjectReference Include="..\WpfMcp.Generators\WpfMcp.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\WpfMcp.Core\WpfMcp.Core.csproj" />
+    <ProjectReference Include="..\..\src\WpfMcp.Generators\WpfMcp.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WpfMcp.Core;
 using WpfMcp.Core.Server;
-using WpfMcp.Generators.SharedLibrary;
 
 namespace WpfMcp.ExampleApp
 {
