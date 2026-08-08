@@ -1,10 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <!-- Oldest WPF-capable target the code supports, so .NET 6/7/8/9 apps can all consume the
+         package. Raising this would drop consumers; net6.0 is the floor because System.Text.Json
+         nodes (JsonNode/JsonObject) arrived in .NET 6. -->
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <!-- Newer language features are compiler-side and safe on an older target framework. -->
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- net6.0 is out of support; this package still targets it deliberately for reach. -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <!-- Ship XML docs for IntelliSense, without requiring a comment on every public member. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -29,6 +36,22 @@
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
+
+  <!-- Release plumbing: a .snupkg of symbols plus SourceLink, so anyone consuming the package can
+       step into this library's source under the debugger. -->
+  <PropertyGroup>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Set by CI (e.g. -p:ContinuousIntegrationBuild=true) for a deterministic, path-independent
+         build. Left off locally because it rewrites paths the local debugger relies on. -->
+    <ContinuousIntegrationBuild Condition="'$(ContinuousIntegrationBuild)' == ''">false</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />

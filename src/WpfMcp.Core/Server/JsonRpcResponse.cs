@@ -93,7 +93,7 @@ namespace WpfMcp.Core.Server
             var json = new JsonObject
             {
                 ["jsonrpc"] = Version,
-                ["id"] = Id?.DeepClone()
+                ["id"] = Id?.CloneNode()
             };
 
             if (Error is not null)
@@ -102,8 +102,8 @@ namespace WpfMcp.Core.Server
             }
             else
             {
-                // DeepClone keeps this instance reusable: a JsonNode may only have one parent.
-                json["result"] = Result?.DeepClone() ?? new JsonObject();
+                // Cloning keeps this instance reusable: a JsonNode may only have one parent.
+                json["result"] = Result?.CloneNode() ?? new JsonObject();
             }
 
             return json;
@@ -189,7 +189,7 @@ namespace WpfMcp.Core.Server
 
             if (Data is not null)
             {
-                json["data"] = Data.DeepClone();
+                json["data"] = Data.CloneNode();
             }
 
             return json;

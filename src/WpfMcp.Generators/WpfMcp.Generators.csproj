@@ -21,8 +21,11 @@
   <!-- PrivateAssets=all keeps Roslyn out of the consuming project's dependency graph; without
        it every consumer of WpfMcp would pull in Microsoft.CodeAnalysis. -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
+    <!-- 4.3.1 is the floor: ForAttributeWithMetadataName, which this generator is built on, landed
+         in Roslyn 4.3. Pinning low widens the range of SDK / Visual Studio versions that can load
+         the analyzer — a newer Roslyn reference refuses to load on an older toolchain. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- No reference to the attributes assembly on purpose: the generator matches attributes by

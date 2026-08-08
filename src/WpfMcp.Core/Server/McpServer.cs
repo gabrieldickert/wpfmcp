@@ -344,7 +344,7 @@ namespace WpfMcp.Core.Server
             {
                 foreach (var def in tool.GetToolDefinitions())
                 {
-                    tools.Add(def!.DeepClone());
+                    tools.Add(def!.CloneNode());
                 }
             }
 

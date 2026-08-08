@@ -13,6 +13,10 @@ dotnet add package WpfMcp
 The package contains the runtime library, the attributes, and the source generator. One reference
 is all you need.
 
+Targets `net6.0-windows`, so .NET 6, 7, 8 and 9 WPF applications can all consume it. Building
+against it needs .NET SDK 6.0.400 / Visual Studio 2022 17.3 or newer, which is the floor for
+loading the analyzer.
+
 ## Write a tool
 
 A static collection, for anything that doesn't touch the UI:
@@ -168,6 +172,10 @@ Not implemented: sessions (`Mcp-Session-Id`), `tools/list` pagination, OAuth aut
 | MCP003 | Error | Two tools in one type share a name |
 | MCP004 | Warning | `[McpTool]` method in a type without `[McpToolCollection]` |
 | MCP005 | Warning | No automatic registration hook; call `RegisterMcpTools()` |
+
+## Changelog
+
+See [CHANGELOG.md](https://github.com/gabrieldickert/wpfmcp/blob/master/CHANGELOG.md).
 
 ## Licence
 

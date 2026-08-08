@@ -27,7 +27,7 @@ namespace WpfMcp.Core.Server
         {
             var parameters = new JsonObject
             {
-                ["progressToken"] = progressToken.DeepClone(),
+                ["progressToken"] = progressToken.CloneNode(),
                 ["progress"] = progress
             };
 
@@ -54,7 +54,7 @@ namespace WpfMcp.Core.Server
 
             if (Params is not null)
             {
-                json["params"] = Params.DeepClone();
+                json["params"] = Params.CloneNode();
             }
 
             return json;

@@ -80,15 +80,12 @@ namespace WpfMcp.Core.Server
                 return false;
             }
 
-            // An explicit null id is invalid per the spec; treating it as absent means the message
-            // is handled as a notification rather than answered with a null-id response.
+            // An explicit null id is invalid per the spec, and JsonObject surfaces a JSON null as a
+            // null node — so "id": null and a missing id both arrive here as null, and either way
+            // the message is handled as a notification rather than answered with a null-id response.
             var id = obj["id"];
-            if (id is not null && id.GetValueKind() == JsonValueKind.Null)
-            {
-                id = null;
-            }
 
-            message = new JsonRpcRequest(method, obj["params"] as JsonObject, id?.DeepClone(), ReadString(obj, "jsonrpc"));
+            message = new JsonRpcRequest(method, obj["params"] as JsonObject, id.CloneNode(), ReadString(obj, "jsonrpc"));
             return true;
         }
 
@@ -107,12 +104,12 @@ namespace WpfMcp.Core.Server
 
             if (Id is not null)
             {
-                json["id"] = Id.DeepClone();
+                json["id"] = Id.CloneNode();
             }
 
             if (Params is not null)
             {
-                json["params"] = Params.DeepClone();
+                json["params"] = Params.CloneNode();
             }
 
             return json;

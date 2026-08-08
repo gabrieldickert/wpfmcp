@@ -83,6 +83,14 @@ curl -X POST http://127.0.0.1:9000/mcp -H "Content-Type: application/json" \
 
 Note that tool names are **not** JSON-RPC methods — tools are always invoked through `tools/call`.
 
+## Requirements
+
+| | Minimum | Notes |
+|---|---|---|
+| Consuming app | `net6.0-windows` | .NET 6, 7, 8 and 9 WPF apps all work. `net6.0` is the floor because `System.Text.Json`'s `JsonNode` arrived in .NET 6. |
+| SDK / Visual Studio to build against it | .NET SDK 6.0.400 / VS 2022 17.3 | Set by the generator's Roslyn 4.3 reference — the analyzer will not load on an older toolchain. |
+| Platform | Windows | It's WPF. |
+
 ## Pack the NuGet package
 
 ```bash
@@ -90,7 +98,30 @@ dotnet pack src/WpfMcp.Core -c Release
 ```
 
 Produces `WpfMcp.<version>.nupkg` containing the runtime library, the attributes, and the
-generator under `analyzers/dotnet/cs`. One `PackageReference` gives a consumer all three.
+generator under `analyzers/dotnet/cs`, plus a `.snupkg` of symbols. One `PackageReference` gives a
+consumer all three, and SourceLink lets them step into this source under the debugger.
+
+## Releasing
+
+1. Bump `<Version>` in `src/WpfMcp.Core/WpfMcp.Core.csproj` and add a `CHANGELOG.md` entry.
+2. Build the release artefacts deterministically:
+
+   ```bash
+   dotnet pack src/WpfMcp.Core -c Release -p:ContinuousIntegrationBuild=true
+   ```
+
+3. Push both packages (nuget.org picks up the `.snupkg` alongside the `.nupkg`):
+
+   ```bash
+   dotnet nuget push src/WpfMcp.Core/bin/Release/WpfMcp.<version>.nupkg \
+     --source https://api.nuget.org/v3/index.json --api-key <YOUR_KEY>
+   ```
+
+4. Tag the commit: `git tag v<version> && git push origin v<version>`.
+
+> A published version number can never be reused, even after unlisting. When testing a package
+> locally, bump the version or delete `~/.nuget/packages/wpfmcp/<version>` first — otherwise NuGet
+> silently serves the cached copy and you test the wrong bits.
 
 ## Protocol support
 
