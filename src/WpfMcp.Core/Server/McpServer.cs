@@ -33,6 +33,22 @@ namespace WpfMcp.Core.Server
 
         public const string DefaultServerUrl = "http://127.0.0.1:9000/mcp";
 
+        /// <summary>Tools returned per tools/list page when nothing else is configured.</summary>
+        public const int DefaultToolPageSize = 50;
+
+        private int _toolPageSize = DefaultToolPageSize;
+
+        /// <summary>
+        /// How many tools a single tools/list response carries. Page size is the server's choice
+        /// under the MCP spec — clients must not assume one — so this can be tuned freely.
+        /// Values below 1 are clamped.
+        /// </summary>
+        public int ToolPageSize
+        {
+            get => _toolPageSize;
+            set => _toolPageSize = value < 1 ? 1 : value;
+        }
+
         private readonly CancellationTokenSource _cts = new();
         private readonly HttpListener _listener;
         private readonly string _endpointPath;
@@ -297,7 +313,7 @@ namespace WpfMcp.Core.Server
                     return JsonRpcResponse.Success(msg.Id, new JsonObject());
 
                 case "tools/list":
-                    return JsonRpcResponse.Success(msg.Id, new JsonObject { ["tools"] = ListTools() });
+                    return ListTools(msg);
 
                 case "tools/call":
                     return await CallToolAsync(msg, progress);
@@ -336,19 +352,104 @@ namespace WpfMcp.Core.Server
             };
         }
 
-        private static JsonArray ListTools()
+        /// <summary>
+        /// Serves one page of tools/list.
+        /// <para>
+        /// Cursors are opaque to the client and encode the name of the last tool already delivered,
+        /// not an index. That keeps them stable: this server's tool set changes as windows open and
+        /// close, so an offset-based cursor would duplicate or skip tools when the list shifts
+        /// between requests. Resuming from a name only ever skips tools that were genuinely removed.
+        /// </para>
+        /// </summary>
+        private JsonRpcResponse ListTools(JsonRpcRequest msg)
         {
-            var tools = new JsonArray();
+            string? after = null;
+
+            if (msg.Params?["cursor"] is JsonValue cursorValue)
+            {
+                if (!cursorValue.TryGetValue<string>(out var encoded) || !TryDecodeCursor(encoded, out after))
+                {
+                    return JsonRpcResponse.Failure(msg.Id,
+                        JsonRpcResponseError.InvalidParams("Invalid cursor"));
+                }
+            }
+
+            var page = new JsonArray();
+            string? lastName = null;
+            var moreRemain = false;
+
+            foreach (var tool in CollectTools())
+            {
+                // Ordinal ordering makes the cursor comparison and the page boundaries deterministic.
+                if (after is not null && string.CompareOrdinal(tool.Key, after) <= 0)
+                {
+                    continue;
+                }
+
+                if (page.Count >= ToolPageSize)
+                {
+                    moreRemain = true;
+                    break;
+                }
+
+                page.Add(tool.Value.CloneNode());
+                lastName = tool.Key;
+            }
+
+            var result = new JsonObject { ["tools"] = page };
+
+            // A missing nextCursor is how a client detects the end, so only set it when a further
+            // page genuinely exists.
+            if (moreRemain && lastName is not null)
+            {
+                result["nextCursor"] = EncodeCursor(lastName);
+            }
+
+            return JsonRpcResponse.Success(msg.Id, result);
+        }
+
+        /// <summary>Every registered tool, ordered by name so paging is deterministic.</summary>
+        private static List<KeyValuePair<string, JsonNode>> CollectTools()
+        {
+            var tools = new List<KeyValuePair<string, JsonNode>>();
 
             foreach (var tool in McpToolRegistry.Tools)
             {
                 foreach (var def in tool.GetToolDefinitions())
                 {
-                    tools.Add(def!.CloneNode());
+                    if (def is null)
+                    {
+                        continue;
+                    }
+
+                    var name = def["name"] is JsonValue value && value.TryGetValue<string>(out var n) ? n : string.Empty;
+                    tools.Add(new KeyValuePair<string, JsonNode>(name, def));
                 }
             }
 
+            tools.Sort((a, b) => string.CompareOrdinal(a.Key, b.Key));
             return tools;
+        }
+
+        private static string EncodeCursor(string lastToolName)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(lastToolName));
+        }
+
+        private static bool TryDecodeCursor(string encoded, out string? lastToolName)
+        {
+            lastToolName = null;
+
+            try
+            {
+                lastToolName = Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
+                return true;
+            }
+            catch (FormatException)
+            {
+                // Not a cursor this server issued.
+                return false;
+            }
         }
 
         private async Task<JsonRpcResponse> CallToolAsync(JsonRpcRequest msg, IMcpProgress progress)

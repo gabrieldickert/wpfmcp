@@ -129,12 +129,17 @@ HTTP only — the stdio transport is deliberately not implemented.
 
 Implements the Streamable HTTP transport of MCP `2025-06-18`: a single endpoint serving `POST`
 for JSON-RPC and `GET` for a server-to-client SSE stream, `initialize` version negotiation,
-`ping`, `tools/list`, `tools/call`, notification handling (202, no body), per-request
+`ping`, `tools/list` (paginated), `tools/call`, notification handling (202, no body), per-request
 cancellation via `notifications/cancelled`, progress over SSE, and
 `notifications/tools/list_changed` when the tool set changes. `Origin` is validated on every
 request to prevent DNS-rebinding attacks against the loopback server.
 
-Not implemented: sessions (`Mcp-Session-Id`), `tools/list` pagination, OAuth authorization, and
+`tools/list` returns `McpServer.ToolPageSize` tools per page (50 by default) and a `nextCursor`
+when more remain; pass it back as `params.cursor` for the next page, and treat a missing
+`nextCursor` as the end. Cursors are opaque and encode a position by tool name rather than by
+index, so they stay correct even though the tool set changes as windows open and close.
+
+Not implemented: sessions (`Mcp-Session-Id`), OAuth authorization, and
 `structuredContent` / `outputSchema`.
 
 See [`src/WpfMcp.Core/README.md`](src/WpfMcp.Core/README.md) for the full API walkthrough —

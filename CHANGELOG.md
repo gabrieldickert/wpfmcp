@@ -27,6 +27,10 @@ First release.
 - **Activity events.** `McpServer` raises `ToolInvocationStarted`, `ToolProgressReported` and
   `ToolInvocationCompleted` so a host application can display live MCP activity without any logging
   code inside the tools.
+- **`tools/list` pagination.** Pages at `McpServer.ToolPageSize` (50 by default) and returns
+  `nextCursor` while results remain. Cursors are opaque and encode a position by tool name rather
+  than by index, so they stay stable while the tool set changes; a malformed cursor is rejected
+  with `-32602`.
 - **Compile-time diagnostics** MCP001–MCP005 for misuse of the attributes.
 - **Origin validation** on every request, as the transport spec requires, to prevent DNS-rebinding
   attacks against the loopback server.
@@ -35,7 +39,7 @@ First release.
 
 - HTTP only. The stdio transport is deliberately not implemented.
 - Targets `net6.0-windows`, so .NET 6, 7, 8 and 9 WPF applications can all consume the package.
-- Not implemented: sessions (`Mcp-Session-Id`), `tools/list` pagination, OAuth authorization, and
+- Not implemented: sessions (`Mcp-Session-Id`), OAuth authorization, and
   `structuredContent` / `outputSchema`.
 
 [0.1.0]: https://github.com/gabrieldickert/wpfmcp/releases/tag/v0.1.0

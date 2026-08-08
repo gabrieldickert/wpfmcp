@@ -156,11 +156,15 @@ HTTP only — the stdio transport is deliberately not implemented.
 
 Implements the Streamable HTTP transport of MCP `2025-06-18`: a single endpoint serving `POST`
 for JSON-RPC and `GET` for a server-to-client SSE stream, `initialize` version negotiation,
-`ping`, `tools/list`, `tools/call`, notification handling, per-request cancellation, and
-`notifications/tools/list_changed` when the tool set changes. `Origin` is validated on every
+`ping`, `tools/list` (paginated), `tools/call`, notification handling, per-request cancellation,
+and `notifications/tools/list_changed` when the tool set changes. `Origin` is validated on every
 request to prevent DNS-rebinding attacks against the loopback server.
 
-Not implemented: sessions (`Mcp-Session-Id`), `tools/list` pagination, OAuth authorization, and
+`tools/list` pages at `McpServer.ToolPageSize` (50 by default), returning `nextCursor` while more
+remain. Cursors are opaque and encode a position by tool name rather than by index, so paging stays
+correct even as the tool set changes between requests — which it does, when windows open and close.
+
+Not implemented: sessions (`Mcp-Session-Id`), OAuth authorization, and
 `structuredContent` / `outputSchema`.
 
 ## Diagnostics
