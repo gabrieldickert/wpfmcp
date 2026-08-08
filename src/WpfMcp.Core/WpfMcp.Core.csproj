@@ -24,8 +24,8 @@
     <PackageTags>mcp;model-context-protocol;wpf;source-generator;ai;llm</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/gabrieldickert/WpfMcp</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/gabrieldickert/WpfMcp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/gabrieldickert/wpfmcp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/gabrieldickert/wpfmcp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
