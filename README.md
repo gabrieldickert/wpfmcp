@@ -49,7 +49,29 @@ The sample listens on `http://127.0.0.1:9000/mcp` and shows every tool call as i
 arguments, result, duration, progress, and errors — alongside window state that its own tools
 read and change.
 
-Try it with curl:
+### Letting a client drive the UI
+
+The sample's right-hand panel has a real editor. These tools write into it, read it back, and
+rename the window itself:
+
+```bash
+# type into the editor from outside the app
+curl -X POST http://127.0.0.1:9000/mcp -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"set_editor_text","arguments":{"text":"Written by the model.\n"}}}'
+
+# now type something into the editor yourself, then read the whole thing back
+curl -X POST http://127.0.0.1:9000/mcp -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"read_editor_text","arguments":{}}}'
+
+# change the actual title bar
+curl -X POST http://127.0.0.1:9000/mcp -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"set_window_title","arguments":{"title":"Retitled by an MCP client"}}}'
+```
+
+The editor is two-way bound, so the model and the person at the keyboard are editing the same
+text — which is what makes `read_editor_text` useful as an input channel, not just an echo.
+
+### Everything else
 
 ```bash
 curl -X POST http://127.0.0.1:9000/mcp -H "Content-Type: application/json" \

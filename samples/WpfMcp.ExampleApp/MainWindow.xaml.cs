@@ -190,5 +190,63 @@ namespace WpfMcp.ExampleApp
                 ? "There are no notes."
                 : string.Join("; ", _model.Notes));
         }
+
+        // ---------------------------------------------------------------------------------------
+        // Editing a real control. The editor is a two-way bound TextBox, so these tools and the
+        // person at the keyboard write to the same place: the model can type into the window, and
+        // read back whatever the human typed.
+        // ---------------------------------------------------------------------------------------
+
+        [McpTool("set_editor_text")]
+        [Description("Replaces all text in the editor shown in the application window")]
+        public int SetEditorText([Description("The new editor contents")] string text)
+        {
+            return Dispatcher.Invoke(() =>
+            {
+                _model.DocumentText = text ?? string.Empty;
+                return _model.DocumentText.Length;
+            });
+        }
+
+        [McpTool("append_editor_text")]
+        [Description("Appends text to the end of the editor, leaving existing content in place")]
+        public int AppendEditorText([Description("Text to append")] string text)
+        {
+            return Dispatcher.Invoke(() =>
+            {
+                _model.DocumentText += text;
+                return _model.DocumentText.Length;
+            });
+        }
+
+        [McpTool("read_editor_text")]
+        [Description("Reads the editor contents, including anything the user typed by hand")]
+        public string ReadEditorText()
+        {
+            return Dispatcher.Invoke(() => _model.DocumentText.Length == 0
+                ? "The editor is empty."
+                : _model.DocumentText);
+        }
+
+        [McpTool("clear_editor")]
+        [Description("Empties the editor in the application window")]
+        public int ClearEditor()
+        {
+            return Dispatcher.Invoke(() =>
+            {
+                var cleared = _model.DocumentText.Length;
+                _model.DocumentText = string.Empty;
+                return cleared;
+            });
+        }
+
+        [McpTool("set_window_title")]
+        [Description("Changes the text shown in the application's title bar")]
+        public string SetWindowTitle([Description("The new window title")] string title)
+        {
+            // Not view-model state — this writes straight to the Window's own property.
+            Dispatcher.Invoke(() => Title = title);
+            return $"Window title is now: {title}";
+        }
     }
 }

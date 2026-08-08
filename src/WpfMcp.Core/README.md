@@ -76,6 +76,43 @@ public partial class MainWindow : Window
 }
 ```
 
+### Reading and writing a control
+
+Because the tool runs against the live window, a model can edit a control's contents *and* read
+back what the user typed into it — both write to the same place:
+
+```csharp
+[McpTool("set_editor_text")]
+[Description("Replaces all text in the editor shown in the application window")]
+public int SetEditorText([Description("The new editor contents")] string text)
+{
+    return Dispatcher.Invoke(() =>
+    {
+        Editor.Text = text ?? string.Empty;
+        return Editor.Text.Length;
+    });
+}
+
+[McpTool("read_editor_text")]
+[Description("Reads the editor contents, including anything the user typed by hand")]
+public string ReadEditorText() => Dispatcher.Invoke(() => Editor.Text);
+```
+
+Anything on the window works the same way — this changes the actual title bar:
+
+```csharp
+[McpTool("set_window_title")]
+[Description("Changes the text shown in the application's title bar")]
+public string SetWindowTitle([Description("The new window title")] string title)
+{
+    Dispatcher.Invoke(() => Title = title);
+    return $"Window title is now: {title}";
+}
+```
+
+The sample app implements all of these — run it and drive them from any MCP client to watch the
+window change.
+
 ## Async, progress and cancellation
 
 Declare a `CancellationToken` or an `IMcpProgress` parameter and the framework supplies it — these

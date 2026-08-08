@@ -111,6 +111,7 @@ namespace WpfMcp.ExampleApp
     public sealed class MainViewModel : ObservableObject
     {
         private string _statusMessage = "Waiting for an MCP client…";
+        private string _documentText = string.Empty;
         private int _callCount;
         private int _errorCount;
 
@@ -131,6 +132,16 @@ namespace WpfMcp.ExampleApp
         {
             get => _statusMessage;
             set => Set(ref _statusMessage, value);
+        }
+
+        /// <summary>
+        /// Contents of the editor. Bound two-way, so it holds whatever the user typed as well as
+        /// whatever a tool wrote — which is what lets a model read human input back.
+        /// </summary>
+        public string DocumentText
+        {
+            get => _documentText;
+            set => Set(ref _documentText, value);
         }
 
         public int CallCount
